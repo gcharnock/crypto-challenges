@@ -17,6 +17,6 @@ config = defaultConfig { reportFile = Just "benchmark.html"}
 
 main :: IO ()
 main = defaultMainWith config [
-  bgroup "challenge 1" [ bench "challenge_1_base64bytestring" $ whnf challenge_1_base64bytestring inputVector
-               ]
+  bgroup "challenge 1" [ bench "challenge_1_base64bytestring" $ whnf challenge_1_base64bytestring inputVector],
+  bgroup "challenge 2" [ bench "challenge_2_xor"              $ whnf (challenge_2_xor xorString1) xorString2]
   ]
