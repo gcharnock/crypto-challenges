@@ -12,7 +12,7 @@ import qualified Data.ByteString.Unsafe as BS
 import Foreign.C.Types
 import System.IO.Unsafe
 import Data.Word8
-import Data.Vector(Vector)
+import Data.Vector.Storable (Vector)
 import qualified Data.Vector.Storable as V
 import Foreign.ForeignPtr
 import Data.Bits
@@ -35,19 +35,21 @@ Remembering that x0 is the least significant symbol
 challenge_1_base64bytestring :: ByteString -> ByteString
 challenge_1_base64bytestring = Base64.encode . fst . Base16.decode
 
-byteStringToVector :: ByteString -> V.Vector CChar
+byteStringToVector :: ByteString -> Vector CChar
 byteStringToVector bs = unsafePerformIO $ do
   BS.unsafeUseAsCStringLen bs $ \(ptr, len) -> do
     fptr <- newForeignPtr_ ptr
     return $ V.unsafeFromForeignPtr0 fptr len
 
-vectorToByteString :: V.Vector CChar -> ByteString
+vectorToByteString :: Vector CChar -> ByteString
 vectorToByteString v = unsafePerformIO $ do
   let (fptr, len) = V.unsafeToForeignPtr0 v
   withForeignPtr fptr $ \ptr ->
     BS.packCStringLen (ptr, len)
 
+challenge_2_xor_kernel :: Vector CChar -> Vector CChar -> Vector CChar
+challenge_2_xor_kernel v1 v2 = V.zipWith xor v1 v2
 
 challenge_2_xor :: ByteString -> ByteString -> ByteString
-challenge_2_xor s1 s2 = Base16.encode $ vectorToByteString $ V.zipWith xor (decode s1) (decode s2)
+challenge_2_xor s1 s2 = Base16.encode $ vectorToByteString $ challenge_2_xor_kernel  (decode s1) (decode s2)
  where decode = byteStringToVector . fst . Base16.decode
